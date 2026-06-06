@@ -1,40 +1,55 @@
 from nodriver import *
 import nodriver as uc
-from rich import print
+from rich import print as rprint
 import json
 import asyncio
+import base64
 
-
+page_loaded = asyncio.Event()
 async def main():
-    browser = await start()
-    tab = await browser.get('about:blank')
-    search_data = {}
-    captured = asyncio.Event()
+    browser = await uc.start()
+    tab = browser.main_tab
 
-    await tab.send(uc.cdp.network.enable())
     
-    async def on_response(event: uc.cdp.network.ResponseReceived):
-        if "async-create-search-page-state" not in event.response.url:
-            return
+    async def on_request_paused(event: uc.cdp.fetch.RequestPaused):
+        request_id= event.request_id
+        url = event.request.url
+        if "async-create-search-page-state"  in url:
+            try:
+                response =  await tab.send(cdp.fetch.get_response_body(request_id=request_id))
+                body, is_base64_encoded = response
+
+                if is_base64_encoded:
+                    body = base64.b64decode(body).decode('utf-8')
+
+                print("--- Captured JSON Response ---")
+                data = json.dumps(json.loads(body), indent=4)
+                with open ("output.json", "w") as f:
+                    f.write(data)
+                rprint(data)
+                page_loaded.set()
+
+            except Exception as e:
+                print(f"Error reading body: {e}")
+
         try:
-            body = await tab.send(uc.cdp.network.get_response_body(event.request_id))
+            await tab.send(cdp.fetch.continue_request(request_id=request_id))
+        except Exception:
+            pass
 
-            search_data["body"] = json.loads(body.body)
-            print("Captured:", search_data["body"])
-            captured.set()
 
-        except Exception as e:
-            print(f"Failed to get body: {e}")
 
-    tab.add_handler(uc.cdp.network.ResponseReceived, on_response)
+    tab.add_handler(cdp.fetch.RequestPaused, on_request_paused)
 
     await tab.get("https://www.zillow.com/tn/?search")
-
-    await asyncio.wait_for(captured.wait(), timeout=15)
+    await tab.send(cdp.fetch.enable(patterns=[cdp.fetch.RequestPattern(url_pattern="*", request_stage=cdp.fetch.RequestStage.RESPONSE)]))
+    print("Fetch domain successfully enabled.")
+    await page_loaded.wait()
+    browser.stop()
     
 
     
 
 
 if __name__ == "__main__":
-    loop().run_until_complete(main())
+    uc.loop().run_until_complete(main())

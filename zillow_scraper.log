@@ -1,0 +1,6 @@
+2026-06-06 17:18:10.808 | INFO     | __main__:main:39 - 'Page Loaded' Event Created.
+2026-06-06 17:18:10.810 | INFO     | __main__:main:41 - Initializing the browser...
+2026-06-06 17:18:12.611 | INFO     | __main__:main:48 - Added a handler for 'RequestPaused' events.
+2026-06-06 17:18:12.745 | INFO     | __main__:main:50 - Fetching url...
+2026-06-06 17:18:15.152 | INFO     | __main__:main:54 - Fetch enabled
+2026-06-06 17:18:27.019 | INFO     | __main__:on_request_paused:18 - Target request intercepted: https://www.zillow.com/async-create-search-page-state

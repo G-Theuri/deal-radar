@@ -14,66 +14,52 @@ CREATE TABLE sources (
 
 CREATE TABLE properties(
     id          SERIAL PRIMARY KEY,
-    zpid        TEXT UNIQUE NOT NULL,
     source_id   INTEGER REFERENCES sources(id),
 
-    -- location
+    -- identifiers
+    zpid                            TEXT UNIQUE NOT NULL,
+    status_type                     TEXT,
+    status_text                     TEXT,
+    rawHomeStatusCd                 TEXT,
+    marketingStatusSimplifiedCd     TEXT,
+    homeStatusForHDP                TEXT,
+
+
+
     address         TEXT,
+    streetAddress   TEXT,
     city            TEXT,
     state           TEXT,
     zip_code        TEXT,
-    country         TEXT DEFAULT 'US',
+    country         TEXT DEFAULT 'USA',
     latitude        NUMERIC(9,6),
     longitude       NUMERIC(9,6),
-    neighbourhood   TEXT,
-    walk_score      INTEGER,
-    transit_score   INTEGER,
-    school_rating   NUMERIC(3,1)
+    isUnmappable   BOOLEAN DEFAULT false,
 
     --Financials
-    listing_price               NUMERIC(12,2)
-    price_per_sqft              NUMERIC(8,2),
+    price                       NUMERIC(12,2)
     zestimate                   NUMERIC(12,2),
-    price_vs_zestimate_pct      NUMERIC(6,2),
-    price_reduced               BOOLEAN DEFAULT false,
-    original_price              NUMERIC(12,2),
-    days_on_market              INTEGER,
-    hoa_fee                     NUMERIC(8,2),
-    property_tax_annual         NUMERIC(10,2),
-    estimated_rental_yield      NUMERIC(5,2),
+    priceChange                 NUMERIC(6,2),
+    daysOnZillow                INTEGER,
+    taxAssessedValue            NUMERIC(10,2),
+    rentZestimate               NUMERIC(5,2),
 
     -- Physical
     bedrooms            INTEGER,
     bathrooms           NUMERIC(4,1),
-    square_footage      INTEGER,
-    lot_size_sqft       INTEGER,
-    year_built          INTEGER,
-    garage              BOOLEAN,
-    basement            BOOLEAN,
-    pool                BOOLEAN,
-    stories             INTEGER,
+    lotAreaValue        NUMERIC(8,2),
+    livingArea          NUMERIC(12,2),
 
     -- Condition & Features
-    property_type           TEXT,  -- 'single_family','condo','townhouse'
-    listing_status          TEXT,  -- 'active','pending','sold'
-    condition               TEXT, -- 'excellent','good','fair','poor'
-    open_kitchen            BOOLEAN,
-    recently_renovated      BOOLEAN,
-    move_in_ready           BOOLEAN,
-    appliances_included     BOOLEAN,
-
-    -- Deals Signals
-    description TEXT, -- full raw listing description
-    keywords_found TEXT[], -- ['motivated seller','price reduced']
-    price_drop_count INTEGER DEFAULT 0,
-    tax_assessed_value NUMERIC(12, 2),
-    price_vs_assessed_pct NUMERIC(6, 2), -- % above or below tax assessment
+    homeType           TEXT,  -- 'single_family','condo','townhouse'
 
     --Metadata
-    listing_url  TEXT,
-    image_urls TEXT[],
-    last_scraped_at TIMESTAMPTZ DEFAULT NOW(),
-    created_at TIMESTAMPTZ DEFAULT NOW(),
+    detailUrl                      TEXT,
+    imgSrc                          TEXT[],
+    availabilityDate                TIMESTAMPTZ,
+    brokerName                      TEXT,
+    last_scraped_at                 TIMESTAMPTZ DEFAULT NOW(),
+    created_at                      TIMESTAMPTZ DEFAULT NOW(),
 
 );
 

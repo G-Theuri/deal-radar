@@ -62,7 +62,7 @@ class HomeInfo(BaseModel):
     latitude: float
     longitude: float
 
-    timeOnZillow: int
+    timeOnZillow: int | None = None
     lotAreaUnit: str | None = None
 
 class ListingsData(BaseModel):
@@ -73,19 +73,19 @@ class ListingsData(BaseModel):
         ),
         populate_by_name=True)
      
-    zpid: str
+    zpid: str 
     detailUrl:str
-    hdpData: HdpData
+    hdpData: HdpData 
     statusType: str
     statusText: str
-    rawHomeStatusCd: str
-    marketingStatusSimplifiedCd: str
+    rawHomeStatusCd: str | None = None
+    marketingStatusSimplifiedCd: str | None = None
 
     flexFieldText: str | None = None
     has3DModel: bool 
-    hasVideo: bool 
+    hasVideo: bool | None = None
 
-    priceLabel: str
+    priceLabel: str | None = None
     address: str
 
     imgSrc: str
@@ -138,6 +138,10 @@ async def process_data():
             listings = data['cat1']['searchResults']['mapResults']
 
             for listing in listings:
+                if not listing.get("zpid"):
+                    logger.warning("Skipping listing — no zpid found")
+                    continue
+
                 listing['detailUrl'] = "https://www.zillow.com" + listing['detailUrl']
                 item = ListingsData.model_validate(listing)
                 data = item.model_dump(by_alias=True, exclude={"hdpData"})
